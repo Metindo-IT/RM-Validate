@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_production_confirm" model="ir.ui.view">
+        <field name="name">stock.picking.form.production.confirm</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="use_production_confirm" invisible="1"/>
+                <field name="receive_state" invisible="1"/>
+                <button name="action_production_confirm" type="object" string="Confirm Penerimaan"
+                        class="btn-primary" groups="vit_internal_transfer_virtual.group_production_receiver"
+                        invisible="not use_production_confirm or state != 'done' or receive_state != 'to_receive'"
+                        confirm="Konfirmasi penerimaan penuh dan pindahkan barang dari Virtual ke Produksi?"/>
+                <field name="display_state" widget="statusbar" invisible="not use_production_confirm"
+                       statusbar_visible="draft,confirmed,assigned,done,received"/>
+            </xpath>
+            <xpath expr="//header/field[@name='state'][1]" position="attributes">
+                <attribute name="invisible">use_production_confirm or picking_type_code != 'incoming'</attribute>
+            </xpath>
+            <xpath expr="//header/field[@name='state'][2]" position="attributes">
+                <attribute name="invisible">use_production_confirm or picking_type_code == 'incoming'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="final_location_dest_id" invisible="not use_production_confirm" required="use_production_confirm" readonly="state in ['done', 'cancel']"/>
+                <field name="receive_state" invisible="not use_production_confirm"/>
+                <field name="receive_picking_id" invisible="not receive_picking_id"/>
+                <field name="received_by_id" invisible="not received_by_id"/>
+                <field name="received_date" invisible="not received_date"/>
+                <field name="production_source_picking_id" invisible="not production_source_picking_id"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_picking_list_production_confirm" model="ir.ui.view">
+        <field name="name">stock.picking.list.production.confirm</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[@name='state']" position="after">
+                <field name="receive_state" widget="badge" optional="show"
+                       decoration-success="receive_state == 'received'" decoration-warning="receive_state == 'to_receive'"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_picking_search_production_confirm" model="ir.ui.view">
+        <field name="name">stock.picking.search.production.confirm</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter name="production_to_receive" string="Menunggu Diterima Produksi"
+                        domain="[('receive_state', '=', 'to_receive'), ('state', '=', 'done')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
